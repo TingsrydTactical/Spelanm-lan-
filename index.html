@@ -516,8 +516,8 @@
   padding:18px 0 40px;
 }
 .site-topbar{
-  position:sticky;
-  top:12px;
+  position:relative !important;
+  top:auto !important;
   z-index:50;
   margin-bottom:18px;
   padding:7px;
@@ -1000,6 +1000,16 @@
   .home-social-v9{padding:17px}
 }
 
+
+/* MOBILFIX: huvudmenyn ska INTE följa med vid scroll */
+@media (max-width:700px){
+  .site-topbar{
+    position:relative !important;
+    top:auto !important;
+    z-index:1 !important;
+  }
+}
+
 </style>
 
 <style id="tt-about-v13">
@@ -1144,6 +1154,26 @@
     }
     .rule-card p{font-size:12.5px}
   }
+
+/* ===== TINGSRYD TACTICAL – MENYN SKA ALDRIG FÖLJA MED VID SCROLL ===== */
+.site-topbar,
+.site-topbar * {
+  /* no positioning change for children */
+}
+.site-topbar {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+  z-index: 50 !important;
+}
+@media (max-width: 700px) {
+  .site-topbar {
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+  }
+}
+
 </style>
 
 </head>
