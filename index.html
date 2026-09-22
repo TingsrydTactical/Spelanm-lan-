@@ -1733,9 +1733,23 @@ async function openMainPage(page, updateHash=true){
     history.replaceState(null, "", "#" + page);
   }
   window.scrollTo({top:0, behavior:"smooth"});
+
+  // Startsidan ska alltid få den senaste spel-listan.
+  // loadGames() använder färsk data från Apps Script och cache endast som reserv.
+  if(page === "home" && typeof loadGames === "function"){
+    loadGames();
+  }
 }
 
-menuButtons.forEach(btn => btn.addEventListener("click", async () => { await openMainPage(btn.dataset.page); if(btn.dataset.page==="gallery" || btn.dataset.page==="admin") loadGallery(); }));
+menuButtons.forEach(btn => btn.addEventListener("click", async () => {
+  await openMainPage(btn.dataset.page);
+  // Hämta alltid färska spel även när användaren går tillbaka till startsidan.
+  // Detta gör att startsidan uppdateras direkt efter att ett spel skapats/ändrats i Admin.
+  if(btn.dataset.page==="home" || btn.dataset.page==="games"){
+    loadGames();
+  }
+  if(btn.dataset.page==="gallery" || btn.dataset.page==="admin") loadGallery();
+}));
 
 document.querySelectorAll("[data-go]").forEach(btn => {
   btn.addEventListener("click", () => openMainPage(btn.dataset.go));
@@ -2163,38 +2177,57 @@ function renderSelectedGameBanner() {
 try { selectedRegistrationGameId = localStorage.getItem("tingsrydSelectedGameId") || ""; } catch (_) {}
 
 function loadGames() {
-  // Hämta aktuella spel direkt från Apps Script. Cache används endast som reserv.
-  return apiGet({action:"games", _ts:Date.now()}, 10000)
-    .then(result => {
-      if (!result || !result.ok) {
-        throw new Error((result && result.error) || "Kunde inte hämta spel.");
-      }
-      currentGames = Array.isArray(result.games) ? result.games : [];
-      try {
-        if (window.ttCache && typeof window.ttCache.set === "function") {
-          window.ttCache.set("games", result);
+  // Hämta alltid aktuell spel-lista när sidan öppnas eller när användaren
+  // klickar på "Kommande spel". Cache används endast som reserv.
+  const request = (attempt) => {
+    return apiGet({action:"games", _ts:Date.now() + "_" + attempt}, 20000)
+      .then(result => {
+        if (!result || !result.ok) {
+          throw new Error((result && result.error) || "Kunde inte hämta spel.");
         }
-      } catch (_) {}
-      renderGames(currentGames);
-      renderHome(currentGames);
-      renderAdminGames(currentGames);
-      if (selectedRegistrationGameId && !getSelectedRegistrationGame()) {
-        selectedRegistrationGameId = "";
-        try { localStorage.removeItem("tingsrydSelectedGameId"); } catch (_) {}
-      }
-      renderSelectedGameBanner();
-      refresh();
-      return currentGames;
-    })
+
+        currentGames = Array.isArray(result.games) ? result.games : [];
+
+        try {
+          if (window.ttCache && typeof window.ttCache.set === "function") {
+            window.ttCache.set("games", result);
+          }
+        } catch (_) {}
+
+        renderGames(currentGames);
+        renderHome(currentGames);
+        renderAdminGames(currentGames);
+
+        if (selectedRegistrationGameId && !getSelectedRegistrationGame()) {
+          selectedRegistrationGameId = "";
+          try { localStorage.removeItem("tingsrydSelectedGameId"); } catch (_) {}
+        }
+
+        renderSelectedGameBanner();
+        refresh();
+        return currentGames;
+      })
+      .catch(err => {
+        // Google Apps Script kan vara seg första gången efter vila.
+        // Försök en gång till innan vi använder cache.
+        if (attempt < 1) {
+          return request(attempt + 1);
+        }
+        throw err;
+      });
+  };
+
+  return request(0)
     .catch(err => {
-      // Om Google tillfälligt inte svarar visar vi senast sparade spel.
       let fallback = null;
+
       try {
         fallback = window.ttCache && window.ttCache.get
           ? window.ttCache.get("games", 24 * 60 * 60 * 1000)
           : null;
       } catch (_) {}
-      if (fallback && fallback.ok && Array.isArray(fallback.games)) {
+
+      if (fallback && fallback.ok && Array.isArray(fallback.games) && fallback.games.length) {
         currentGames = fallback.games;
         renderGames(currentGames);
         renderHome(currentGames);
@@ -2202,11 +2235,13 @@ function loadGames() {
         renderSelectedGameBanner();
         return currentGames;
       }
+
       if (!currentGames.length) {
         renderGames([]);
         renderHome([]);
         renderAdminGames([]);
       }
+
       console.error("Kommande spel kunde inte hämtas:", err);
       return currentGames;
     });
