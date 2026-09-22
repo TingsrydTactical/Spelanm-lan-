@@ -2163,47 +2163,37 @@ function renderSelectedGameBanner() {
 try { selectedRegistrationGameId = localStorage.getItem("tingsrydSelectedGameId") || ""; } catch (_) {}
 
 function loadGames() {
-  // "Kommande spel" ska alltid få den aktuella listan från Apps Script.
-  // Vi använder en egen mycket kort cache endast som reserv, så gamla spel
-  // aldrig kan ligga kvar i flera minuter på sidan.
+  // Hämta aktuella spel direkt från Apps Script. Cache används endast som reserv.
   return apiGet({action:"games", _ts:Date.now()}, 10000)
     .then(result => {
       if (!result || !result.ok) {
         throw new Error((result && result.error) || "Kunde inte hämta spel.");
       }
-
       currentGames = Array.isArray(result.games) ? result.games : [];
-
-      // Spara färsk data för snabb visning vid nästa sidbyte.
       try {
         if (window.ttCache && typeof window.ttCache.set === "function") {
           window.ttCache.set("games", result);
         }
       } catch (_) {}
-
       renderGames(currentGames);
       renderHome(currentGames);
       renderAdminGames(currentGames);
-
       if (selectedRegistrationGameId && !getSelectedRegistrationGame()) {
         selectedRegistrationGameId = "";
         try { localStorage.removeItem("tingsrydSelectedGameId"); } catch (_) {}
       }
-
       renderSelectedGameBanner();
       refresh();
       return currentGames;
     })
     .catch(err => {
-      // Om Google tillfälligt är långsamt/offline försöker vi visa senast
-      // sparade spel istället för en tom sida.
+      // Om Google tillfälligt inte svarar visar vi senast sparade spel.
       let fallback = null;
       try {
         fallback = window.ttCache && window.ttCache.get
           ? window.ttCache.get("games", 24 * 60 * 60 * 1000)
           : null;
       } catch (_) {}
-
       if (fallback && fallback.ok && Array.isArray(fallback.games)) {
         currentGames = fallback.games;
         renderGames(currentGames);
@@ -2212,13 +2202,11 @@ function loadGames() {
         renderSelectedGameBanner();
         return currentGames;
       }
-
       if (!currentGames.length) {
         renderGames([]);
         renderHome([]);
         renderAdminGames([]);
       }
-
       console.error("Kommande spel kunde inte hämtas:", err);
       return currentGames;
     });
@@ -2255,7 +2243,8 @@ function deleteGame(id) {
   apiGet({action:"deleteGame", id})
     .then(result => {
       if (!result.ok) throw new Error(result.error || "Kunde inte ta bort spelet.");
-      showAdminMessage("Spelet är borttaget.");\n      try { localStorage.removeItem("tt_cache_v1_games"); } catch (_) {}
+      showAdminMessage("Spelet är borttaget.");
+      try { localStorage.removeItem("tt_cache_v1_games"); } catch (_) {}
       return loadGames();
     })
     .catch(err => showAdminMessage(err.message, true));
