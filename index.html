@@ -499,6 +499,15 @@
   }
 
 
+
+/* ===== MOBIL: huvudmenyn följer sidan istället för att flyta ===== */
+@media (max-width: 700px){
+  .site-topbar{
+    position:relative;
+    top:auto;
+  }
+}
+
 /* ===== TINGSRYD TACTICAL SITE SHELL ===== */
 .site-shell{
   width:100%;
@@ -918,6 +927,79 @@
   .home-mini-game-v9{padding:14px;border:1px solid rgba(169,199,143,.16);border-radius:13px;background:rgba(6,12,7,.34)}
   .home-mini-game-v9 .date{color:#b0cf98;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.home-mini-game-v9 h3{margin:6px 0 5px;color:#e5ede1;font-size:13px;text-transform:uppercase}.home-mini-game-v9 p{margin:0;color:#8e9a8c;font-size:10px;line-height:1.45}
   @media(max-width:760px){.home-hero-v9{padding:27px 18px 20px}.home-strip-v9,.home-mini-games-v9{grid-template-columns:1fr}.home-next-grid-v9{grid-template-columns:1fr}.home-next-side-v9{text-align:left}.home-actions-v9 .site-action{width:100%}}
+
+/* Sociala länkar på startsidan */
+.home-social-v9{
+  margin-top:18px;
+  padding:22px;
+  border:1px solid rgba(169,199,143,.22);
+  border-radius:18px;
+  background:rgba(8,16,9,.62);
+  box-shadow:0 16px 45px rgba(0,0,0,.20);
+}
+.home-social-links-v9{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.home-social-link-v9{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  min-height:72px;
+  padding:12px 14px;
+  border:1px solid rgba(169,199,143,.28);
+  border-radius:13px;
+  background:linear-gradient(145deg,rgba(31,48,28,.82),rgba(8,16,9,.78));
+  color:#e4ebdf;
+  text-decoration:none;
+  transition:all .18s ease;
+}
+.home-social-link-v9:hover{
+  border-color:rgba(176,207,152,.60);
+  background:rgba(145,172,126,.13);
+  transform:translateY(-2px);
+}
+.home-social-icon-v9{
+  width:42px;
+  height:42px;
+  flex:0 0 42px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(169,199,143,.30);
+  border-radius:11px;
+  background:rgba(145,172,126,.10);
+}
+.home-social-icon-v9 svg{
+  width:23px;
+  height:23px;
+  fill:#b0cf98;
+}
+.home-social-link-v9 span:nth-child(2){
+  min-width:0;
+  flex:1;
+}
+.home-social-link-v9 strong{
+  display:block;
+  font-size:13px;
+  letter-spacing:.05em;
+}
+.home-social-link-v9 small{
+  display:block;
+  margin-top:3px;
+  color:#8f9d8b;
+  font-size:10px;
+  line-height:1.4;
+}
+.home-social-link-v9 b{
+  color:#b0cf98;
+  font-size:18px;
+}
+@media(max-width:650px){
+  .home-social-links-v9{grid-template-columns:1fr}
+  .home-social-v9{padding:17px}
+}
+
 </style>
 
 <style id="tt-about-v13">
@@ -1122,13 +1204,34 @@
           </div>
         </div>
 
-        <div class="home-section-v9">
+
+        <div class="home-social-v9">
           <div class="home-section-head-v9">
-            <div><h2>På gång</h2><p>De närmaste publicerade spelen</p></div>
-            <button class="site-action" type="button" data-go="games" style="padding:9px 12px;font-size:9px">ALLA SPEL</button>
+            <div>
+              <h2>Följ Tingsryd Tactical</h2>
+              <p>Häng med på våra spel, nyheter och gemenskap</p>
+            </div>
           </div>
-          <div class="home-mini-games-v9" id="homeMiniGames">
-            <div class="home-mini-game-v9"><div class="date">Laddar</div><h3>Kommande spel</h3><p>Hämtar spelkalendern...</p></div>
+          <div class="home-social-links-v9">
+            <a class="home-social-link-v9" href="https://discord.gg/eQnnMA3Aq6" target="_blank" rel="noopener" aria-label="Tingsryd Tactical på Discord">
+              <span class="home-social-icon-v9">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M19.54 5.35A16.2 16.2 0 0 0 15.8 4.2l-.48.98a14.7 14.7 0 0 0-6.64 0L8.2 4.2a16.2 16.2 0 0 0-3.74 1.15C2.1 8.5 1.45 11.58 1.78 14.62a16.7 16.7 0 0 0 5.12 2.58l1.24-1.7c-.68-.25-1.33-.56-1.94-.93l.47-.36c3.74 1.75 7.81 1.75 11.51 0l.48.36c-.62.37-1.27.69-1.95.94l1.24 1.69a16.7 16.7 0 0 0 5.12-2.58c.39-3.53-.66-6.58-3.53-9.27ZM8.98 13.2c-1.1 0-2-1-2-2.22s.88-2.22 2-2.22 2 1 2 2.22-.89 2.22-2 2.22Zm6.04 0c-1.1 0-2-1-2-2.22s.88-2.22 2-2.22 2 1 2 2.22-.89 2.22-2 2.22Z"/>
+                </svg>
+              </span>
+              <span><strong>Discord</strong><small>Gå med i vår server</small></span>
+              <b>→</b>
+            </a>
+
+            <a class="home-social-link-v9" href="https://www.facebook.com/groups/173106426962459" target="_blank" rel="noopener" aria-label="Tingsryd Tactical på Facebook">
+              <span class="home-social-icon-v9">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M13.7 21v-8h2.7l.4-3h-3.1V8.1c0-.87.24-1.46 1.5-1.46h1.7V4a22 22 0 0 0-2.48-.13c-2.45 0-4.13 1.5-4.13 4.25V10H8v3h2.3v8h3.4Z"/>
+                </svg>
+              </span>
+              <span><strong>Facebook</strong><small>Följ oss och se våra uppdateringar</small></span>
+              <b>→</b>
+            </a>
           </div>
         </div>
 
