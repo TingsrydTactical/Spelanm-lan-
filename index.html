@@ -1479,6 +1479,7 @@
 .game-info-block h2{margin:0;color:#edf4e9;font-size:24px;line-height:1.25}
 .game-info-block p{margin:0;color:#aab6a7;font-size:13px;line-height:1.75;white-space:pre-wrap}
 .game-info-block img{display:block;max-width:100%;height:auto;border-radius:12px;border:1px solid rgba(176,207,152,.25);box-shadow:0 14px 35px rgba(0,0,0,.20)}
+@media (min-width:701px){.game-info-block img{width:60%;max-width:60%;}}
 .game-info-empty{padding:35px 20px;text-align:center;border:1px dashed rgba(169,199,143,.25);border-radius:14px;color:#8f9b8d;background:rgba(8,16,9,.25)}
 .game-info-admin{margin-top:22px;padding-top:22px;border-top:1px solid rgba(169,199,143,.18)}
 .game-info-admin select{width:100%;box-sizing:border-box;margin-top:7px;border:1px solid rgba(169,199,143,.28);border-radius:10px;padding:12px 13px;background:rgba(7,14,8,.72);color:#e7eee2;font:inherit;font-size:12px}
@@ -1580,6 +1581,38 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
 }
 </style>
 
+
+<style>
+/* SPELINFO: mindre bilder på dator, oförändrat på mobil */
+@media (min-width: 701px) {
+  .game-info-block img {
+    width: 30%;
+    max-width: 30%;
+    height: auto;
+  }
+}
+</style>
+
+
+<style>
+/* SPELINFO: centrera text och bilder på dator, mobil oförändrad */
+@media (min-width: 701px) {
+  .game-info-block {
+    text-align: center;
+  }
+  .game-info-block p,
+  .game-info-block h2 {
+    text-align: center;
+  }
+  .game-info-block img {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .game-info-block .muted {
+    text-align: center;
+  }
+}
+</style>
 </head>
 <body>
 
