@@ -1564,6 +1564,22 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
 }
 </style>
 
+
+<style id="tt-mobile-2026-v34-fixes">
+/* v34 – mobil: håll etiketter hela och lås Spelinfo-knappens position */
+.game-info-button{transform:translateY(-50%)!important;transition:none!important;white-space:nowrap;overflow-wrap:normal!important;word-break:normal!important}
+.game-title-row .game-info-button:hover,.hn-title-row .game-info-button:hover{transform:translateY(-50%)!important}
+.game-slots-v4 .slots-label,.game-slots-v4 .slots-value,.game-status-v4,.game-meta-v4 span{white-space:nowrap;overflow-wrap:normal!important;word-break:normal!important}
+.game-footer-v4{min-width:0}
+.game-footer-v4 .game-status-v4{flex:0 0 auto}
+@media(max-width:430px){
+  .game-slots-v4{gap:8px}
+  .game-slots-v4 .slots-value{font-size:16px}
+  .game-footer-v4{gap:8px}
+  .game-footer-v4 .site-action{min-width:0;flex:1}
+}
+</style>
+
 </head>
 <body>
 
