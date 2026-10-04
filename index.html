@@ -609,6 +609,17 @@
   background:rgba(145,172,126,.16);
   color:#e4ebdf;
 }
+.mobile-menu-toggle{display:none}
+@media(max-width:700px){
+  .mobile-menu-toggle{display:flex;width:100%;align-items:center;justify-content:center;gap:5px;flex-direction:column;border:1px solid rgba(169,199,143,.34);border-radius:10px;padding:10px;background:rgba(145,172,126,.10);color:#dce7d7;cursor:pointer;margin-top:4px}
+  .mobile-menu-toggle span{display:block;width:22px;height:2px;border-radius:2px;background:#b0cf98;transition:.18s}
+  .mobile-menu-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .mobile-menu-toggle.open span:nth-child(2){opacity:0}
+  .mobile-menu-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .site-menu{display:none;flex-direction:column;flex-wrap:nowrap;gap:5px;margin-top:6px}
+  .site-menu.open{display:flex}
+  .site-menu button{flex:0 0 auto;width:100%;min-width:0;padding:11px 10px}
+}
 .site-page-main{display:none}
 .site-page-main.active{display:block}
 .site-card{
@@ -1662,6 +1673,7 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
   }
 }
 </style>
+<style id="tt-admin-reviews-v1">.admin-reviews-panel{margin-top:10px;padding:10px;border-top:1px solid rgba(169,199,143,.14);background:rgba(4,9,5,.25);border-radius:9px}.admin-review-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(169,199,143,.10)}.admin-review-row:last-child{border-bottom:0}.admin-review-content{flex:1;min-width:0}.admin-review-head{display:flex;gap:10px;align-items:center;color:#8f9b8d;font-size:10px}.admin-review-text{margin-top:7px;color:#dce6d8;font-size:11px;line-height:1.55;white-space:pre-wrap}.admin-review-text.muted{color:#778274}.admin-review-row .site-action.danger{border-color:rgba(210,105,105,.42)}.admin-review-empty{padding:10px;color:#8f9b8d;font-size:10px}@media(max-width:700px){.admin-review-row{flex-direction:column}.admin-review-row .site-action{width:100%}}</style>
 </head>
 <body>
 
@@ -1685,6 +1697,7 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
         <svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13.7 21v-8h2.7l.4-3h-3.1V8.1c0-.87.24-1.46 1.5-1.46h1.7V4a22 22 0 0 0-2.48-.13c-2.45 0-4.13 1.5-4.13 4.25V10H8v3h2.3v8h3.4Z"/></svg>
       </a>
     </div>
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="Öppna meny" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="site-menu" aria-label="Huvudmeny">
       <button data-page="home" class="active">START</button>
       <button data-page="games">KOMMANDE SPEL</button>
@@ -2284,6 +2297,24 @@ const mainPages = {
 
 const menuButtons = [...document.querySelectorAll(".site-menu button[data-page]")];
 
+const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+const siteMenu = document.querySelector(".site-menu");
+function closeMobileMenu(){
+  if(!mobileMenuToggle || !siteMenu) return;
+  siteMenu.classList.remove("open");
+  mobileMenuToggle.classList.remove("open");
+  mobileMenuToggle.setAttribute("aria-expanded","false");
+  mobileMenuToggle.setAttribute("aria-label","Öppna meny");
+}
+function toggleMobileMenu(){
+  if(!mobileMenuToggle || !siteMenu) return;
+  const open=siteMenu.classList.toggle("open");
+  mobileMenuToggle.classList.toggle("open",open);
+  mobileMenuToggle.setAttribute("aria-expanded",String(open));
+  mobileMenuToggle.setAttribute("aria-label",open?"Stäng meny":"Öppna meny");
+}
+if(mobileMenuToggle) mobileMenuToggle.addEventListener("click",toggleMobileMenu);
+
 let ttAdminToken = sessionStorage.getItem("tt_admin_token") || "";
 let ttAdminPassword = "";
 
@@ -2369,6 +2400,7 @@ async function openMainPage(page, updateHash=true){
 }
 
 menuButtons.forEach(btn => btn.addEventListener("click", async () => {
+  closeMobileMenu();
   await openMainPage(btn.dataset.page);
   // Hämta alltid färska spel även när användaren går tillbaka till startsidan.
   // Detta gör att startsidan uppdateras direkt efter att ett spel skapats/ändrats i Admin.
@@ -3116,7 +3148,7 @@ async function loadGameArchive(){
 }
 
 async function loadArchiveReviews(gameId){
-  const rows=await window.ttSbFetch('/tt_game_reviews?select=rating,review_text,created_at&game_id=eq.'+encodeURIComponent(gameId)+'&order=created_at.desc',{method:'GET'});
+  const rows=await window.ttSbFetch('/tt_game_reviews?select=id,rating,review_text,created_at&game_id=eq.'+encodeURIComponent(gameId)+'&order=created_at.desc',{method:'GET'});
   return Array.isArray(rows)?rows:[];
 }
 
@@ -3269,6 +3301,32 @@ async function unarchiveGame(gameId){
   }
 }
 
+async function loadAdminGameReviews(gameId){
+  const wrap=document.getElementById('adminReviews_'+String(gameId));
+  if(!wrap)return;
+  wrap.innerHTML='<div class="admin-review-empty">Laddar recensioner...</div>';
+  try{
+    const rows=await window.ttSbFetch('/tt_game_reviews?select=id,rating,review_text,created_at&game_id=eq.'+encodeURIComponent(gameId)+'&order=created_at.desc',{method:'GET'});
+    const reviews=Array.isArray(rows)?rows:[];
+    if(!reviews.length){wrap.innerHTML='<div class="admin-review-empty">Inga recensioner för detta spel.</div>';return;}
+    wrap.innerHTML=reviews.map(r=>`<div class="admin-review-row"><div class="admin-review-content"><div class="admin-review-head"><span class="archive-review-stars">${archiveStars(r.rating)}</span><span>${escapeHtml(new Date(r.created_at).toLocaleDateString('sv-SE'))}</span></div>${r.review_text?`<div class="admin-review-text">${escapeHtml(r.review_text)}</div>`:'<div class="admin-review-text muted">Ingen text lämnades.</div>'}</div><button class="site-action danger" type="button" data-delete-review="${escapeHtml(r.id)}" data-delete-review-game="${escapeHtml(gameId)}">TA BORT RECENSION</button></div>`).join('');
+    wrap.querySelectorAll('[data-delete-review]').forEach(btn=>btn.addEventListener('click',()=>deleteAdminReview(btn.dataset.deleteReview,btn.dataset.deleteReviewGame)));
+  }catch(err){wrap.innerHTML='<div class="admin-review-empty">Kunde inte hämta recensionerna.</div>';}
+}
+
+async function deleteAdminReview(reviewId,gameId){
+  if(!(await window.ttEnsureSupabaseAdminPassword()))return;
+  if(!window.confirm('Ta bort denna recension permanent?\n\nDet går inte att ångra.'))return;
+  try{
+    const result=await window.ttSbFetch('/rpc/tt_admin_delete_game_review',{method:'POST',body:JSON.stringify({p_password:ttAdminPassword,p_review_id:Number(reviewId)})});
+    const data=Array.isArray(result)?(result[0]||{}):result;
+    if(!data||data.ok!==true)throw new Error((data&&data.error)||'Recensionen kunde inte tas bort.');
+    await loadAdminGameReviews(gameId);
+    await loadGameArchive();
+    window.alert('Recensionen är borttagen.');
+  }catch(err){window.alert('Kunde inte ta bort recensionen: '+(err.message||String(err)));}
+}
+
 function renderAdminArchivedGames(){
   const list=document.getElementById('adminArchivedGames');
   if(!list) return;
@@ -3288,11 +3346,14 @@ function renderAdminArchivedGames(){
         </div>
       </div>
       <div class="admin-game-actions">
+        <button class="site-action" type="button" data-admin-reviews-game="${escapeHtml(a.game_id)}">RECENSIONER</button>
         <button class="site-action" type="button" data-unarchive-game="${escapeHtml(a.game_id)}">TA BORT FRÅN ARKIV</button>
       </div>
+      <div id="adminReviews_${escapeHtml(a.game_id)}" class="admin-reviews-panel" style="display:none;grid-column:1/-1"></div>
     </div>`;
   }).join('');
   list.querySelectorAll('[data-unarchive-game]').forEach(btn=>btn.addEventListener('click',()=>unarchiveGame(btn.dataset.unarchiveGame)));
+  list.querySelectorAll('[data-admin-reviews-game]').forEach(btn=>btn.addEventListener('click',async()=>{const panel=document.getElementById('adminReviews_'+btn.dataset.adminReviewsGame);if(!panel)return;const open=panel.style.display!=='none';panel.style.display=open?'none':'block';if(!open)await loadAdminGameReviews(btn.dataset.adminReviewsGame);}));
 }
 
 function renderAdminGames(games) {
@@ -4909,12 +4970,39 @@ window.addEventListener("error",function(e){
 </style>
 
 <style>
-.admin-archived-game-row{align-items:center!important;}
-.admin-archived-game-row .admin-game-actions{margin-left:auto;}
+.admin-archived-game-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center!important;
+  gap:10px 12px!important;
+}
+.admin-archived-game-row > div:first-child{min-width:0;}
+.admin-archived-game-row .admin-game-actions{
+  margin-left:0;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.admin-archived-game-row .admin-reviews-panel{
+  grid-column:1/-1!important;
+  width:100%;
+  box-sizing:border-box;
+}
 @media(max-width:700px){
-  .admin-archived-game-row{align-items:flex-start!important;gap:10px!important;}
-  .admin-archived-game-row .admin-game-actions{width:100%;margin-left:0;}
-  .admin-archived-game-row .admin-game-actions .site-action{width:100%;}
+  .admin-archived-game-row{
+    grid-template-columns:1fr;
+    align-items:start!important;
+  }
+  .admin-archived-game-row .admin-game-actions{
+    width:100%;
+    justify-content:stretch;
+  }
+  .admin-archived-game-row .admin-game-actions .site-action{
+    width:100%;
+    flex:1 1 100%;
+  }
 }
 </style>
 </body>
