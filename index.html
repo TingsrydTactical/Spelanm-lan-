@@ -5005,5 +5005,93 @@ window.addEventListener("error",function(e){
   }
 }
 </style>
+
+<style id="tt-mobile-hamburger-final">
+/* Slutlig mobilmeny: endast burgaren syns stängd, burgaren ligger till höger och följer sidan vid scroll. */
+@media (max-width:700px){
+  .site-topbar{
+    position:relative!important;
+    top:auto!important;
+    bottom:auto!important;
+  }
+
+  .mobile-menu-toggle{
+    display:flex!important;
+    position:absolute!important;
+    top:10px!important;
+    right:10px!important;
+    width:50px!important;
+    height:44px!important;
+    margin:0!important;
+    padding:8px!important;
+    box-sizing:border-box!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:5px!important;
+    flex-direction:column!important;
+    border:1px solid rgba(169,199,143,.34)!important;
+    border-radius:10px!important;
+    background:rgba(145,172,126,.10)!important;
+    z-index:20!important;
+  }
+
+  .mobile-menu-toggle span{
+    display:block!important;
+    width:22px!important;
+    height:2px!important;
+    flex:0 0 2px!important;
+    border-radius:2px!important;
+    background:#b0cf98!important;
+    transition:.18s!important;
+  }
+
+  .mobile-menu-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg)!important}
+  .mobile-menu-toggle.open span:nth-child(2){opacity:0!important}
+  .mobile-menu-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)!important}
+
+  .site-brand{
+    padding-right:68px!important;
+  }
+
+  /* Viktigt: äldre mobil-CSS använder grid. Burgermenyn ska vara stängd tills man trycker. */
+  .site-menu{
+    display:none!important;
+    grid-template-columns:none!important;
+    flex-direction:column!important;
+    flex-wrap:nowrap!important;
+    width:100%!important;
+    gap:5px!important;
+    margin-top:8px!important;
+  }
+
+  .site-menu.open{
+    display:flex!important;
+  }
+
+  .site-menu button{
+    width:100%!important;
+    min-width:0!important;
+    flex:0 0 auto!important;
+    padding:11px 10px!important;
+    font-size:11px!important;
+  }
+}
+
+@media (max-width:430px){
+  .mobile-menu-toggle{
+    top:9px!important;
+    right:9px!important;
+    width:48px!important;
+    height:42px!important;
+  }
+  .site-brand{
+    padding-right:64px!important;
+  }
+  .site-menu button{
+    font-size:10px!important;
+    padding:10px 8px!important;
+  }
+}
+</style>
 </body>
 </html>
