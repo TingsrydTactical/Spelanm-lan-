@@ -2976,24 +2976,60 @@ document.getElementById("gameImageFile")?.addEventListener("change",function(){c
 document.getElementById("galleryImageFile")?.addEventListener("change",function(){const f=this.files?.[0],p=document.getElementById("galleryImagePreview");if(!f||!p)return;p.style.display="block";p.innerHTML=`<img src="${URL.createObjectURL(f)}" alt="Förhandsvisning">`;});
 let homeGameIdsLoaded = false;
 let homeGameIdsLoading = null;
+let homeGameSelectionVersion = 0;
+const HOME_GAME_IDS_STORAGE_KEY = "tt_home_game_ids_v1";
+
+function saveHomeGameIdsLocal(ids){
+  try{
+    localStorage.setItem(HOME_GAME_IDS_STORAGE_KEY, JSON.stringify(Array.from(ids || []).map(String)));
+  }catch(_){}
+}
+
+function loadHomeGameIdsLocal(){
+  try{
+    const raw=localStorage.getItem(HOME_GAME_IDS_STORAGE_KEY);
+    const parsed=raw?JSON.parse(raw):null;
+    if(Array.isArray(parsed)) return new Set(parsed.map(x=>String(x)));
+  }catch(_){}
+  return null;
+}
 
 async function loadHomeGameIds(force=false){
-  // Startsidesvalet ska läsas från Supabase en gång per sidladdning.
-  // Efter det är homeGameIds den aktuella sessionens sanningskälla.
+  // Läs inte om ett giltigt val om och om igen. Framför allt får en
+  // fördröjd/trasig RPC-respons aldrig skriva över ett redan valt spel.
   if(homeGameIdsLoaded && !force) return homeGameIds;
   if(homeGameIdsLoading && !force) return homeGameIdsLoading;
 
+  // Visa senast verifierade lokala val direkt medan Supabase hämtas.
+  if(!homeGameIdsLoaded){
+    const localIds=loadHomeGameIdsLocal();
+    if(localIds) homeGameIds=localIds;
+  }
+
+  const requestVersion=homeGameSelectionVersion;
   homeGameIdsLoading = (async()=>{
     try{
       const result=await sbFetch('/rpc/tt_home_game_ids',{method:'POST',headers,body:'{}'});
       const data=Array.isArray(result)?(result[0]||{}):result;
-      const ids=new Set((Array.isArray(data.game_ids)?data.game_ids:[]).map(x=>String(x)));
+
+      // RPC:n måste uttryckligen ge oss en array. Ett oväntat svar får inte
+      // tolkas som "inga spel" och därmed tömma startsidan.
+      if(!data || !Array.isArray(data.game_ids)) throw new Error('Ogiltigt svar från tt_home_game_ids.');
+
+      // Om admin hann spara ett nytt urval medan denna läsning låg och väntade
+      // är den gamla responsen föråldrad och får inte skriva över det nya valet.
+      if(requestVersion !== homeGameSelectionVersion){
+        return homeGameIds;
+      }
+
+      const ids=new Set(data.game_ids.map(x=>String(x)));
       homeGameIds=ids;
       homeGameIdsLoaded=true;
+      saveHomeGameIdsLocal(ids);
       return homeGameIds;
     }catch(err){
       console.warn("Kunde inte läsa startsidesval:",err);
-      // Behåll befintligt val om vi redan har ett lokalt/sessionens val.
+      // Behåll senaste fungerande val. Ett läsfel ska aldrig betyda "inga spel".
       homeGameIdsLoaded=true;
       return homeGameIds;
     }finally{
@@ -3095,6 +3131,7 @@ async function saveHomeGames(){
     homeGameIds=new Set(verifiedIds);
     homeGameIdsLoaded=true;
     homeGameIdsLoading=null;
+    saveHomeGameIdsLocal(homeGameIds);
     showAdminMessage("Startsidans spel är sparade och verifierade. "+(verifiedIds.length?verifiedIds.length+" spel valt." : "Inga spel är valda."));
     const hint=document.getElementById("adminHomeGameHint");
     if(hint){ hint.style.display="none"; }
@@ -3541,7 +3578,15 @@ document.getElementById("registrationGame")?.addEventListener("change", function
   updateRegistrationGamePicker();
 });
 
+let gamesLoadPromise = null;
+
 function loadGames() {
+  // Undvik att två samtidiga laddningar skriver över varandra.
+  // Det kan annars hända vid första sidladdningen när både startsidan och
+  // migrationslagret försöker läsa spel samtidigt. En misslyckad sekundär
+  // laddning ska aldrig tömma en redan fungerande spel-lista.
+  if (gamesLoadPromise) return gamesLoadPromise;
+
   // Publika spel hämtas direkt från Supabase. Ingen extern datakälla används som fallback.
   const request = () => {
     const loader = (typeof window.ttSupabaseGames === "function")
@@ -3583,22 +3628,26 @@ function loadGames() {
       });
   };
 
-  return request()
+  gamesLoadPromise = request()
     .catch(err => {
-      // Ingen gammal cache används som reserv om Supabase misslyckas.
-      currentGames = [];
-      renderGames([]);
-      renderHome([]);
-      renderAdminGames([]);
-      renderSelectedGameBanner();
+      // En tillfällig Supabase-felkod får inte göra att redan visade spel
+      // försvinner från startsidan. Behåll senaste fungerande data om sådan finns.
       console.error("Supabase: Kommande spel kunde inte hämtas:", err);
       const msg = err && err.message ? err.message : String(err);
       const list = document.getElementById("gameList");
-      if (list) {
+      if (!currentGames.length && list) {
         list.innerHTML = '<div class="site-tile" style="grid-column:1/-1"><h3>Kunde inte hämta spel från Supabase</h3><p style="word-break:break-word">' + escapeHtml(msg) + '</p><p>Detta är medvetet: gammal Google/Docs-data används inte längre som reserv för spel.</p></div>';
       }
-      return [];
+      renderHome(currentGames);
+      renderAdminGames(currentGames);
+      renderSelectedGameBanner();
+      return currentGames;
+    })
+    .finally(() => {
+      gamesLoadPromise = null;
     });
+
+  return gamesLoadPromise;
 }
 
 function fillGameForm(g) {
