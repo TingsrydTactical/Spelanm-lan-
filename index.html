@@ -1170,6 +1170,55 @@
   font-weight:800;
 }
 
+
+
+  /* ===== SPELARKIV ===== */
+  .archive-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+  .archive-card{border:1px solid rgba(169,199,143,.22);border-radius:13px;background:linear-gradient(145deg,rgba(13,24,14,.82),rgba(7,13,8,.68));overflow:hidden;min-width:0}
+  .archive-card-image{height:92px;background:linear-gradient(135deg,rgba(119,146,103,.18),rgba(8,16,9,.7));background-size:cover;background-position:center;position:relative}
+  .archive-card-image:after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(5,10,6,.72),transparent 70%)}
+  .archive-card-noimage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(210,230,189,.18);font-size:28px;font-weight:900;letter-spacing:.08em}
+  .archive-card-body{padding:10px 11px}
+  .archive-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .archive-title{margin:0;color:#e7eee3;font-size:13px;line-height:1.2}
+  .archive-meta{margin-top:4px;color:#9da99a;font-size:9px;line-height:1.45}
+  .archive-summary{margin:7px 0 0;color:#aeb9aa;font-size:10px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .archive-rating{margin-top:7px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .archive-stars{color:#d2e6bd;letter-spacing:.04em;font-size:11px}
+  .archive-rating-text{color:#8f9b8d;font-size:9px}
+  .archive-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}
+  .archive-actions .site-action{width:100%;padding:7px 5px;font-size:8px;min-height:30px}
+  .archive-detail{display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(169,199,143,.16)}
+  .archive-detail.show{display:block}
+  .archive-reviews{display:grid;gap:10px;margin-top:12px}
+  .archive-review{padding:13px 14px;border:1px solid rgba(169,199,143,.15);border-radius:12px;background:rgba(0,0,0,.14)}
+  .archive-review-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+  .archive-review-stars{font-size:13px;letter-spacing:.06em;color:#d2e6bd}
+  .archive-review-date{font-size:10px;color:#778274}
+  .archive-review-text{margin-top:8px;color:#c4ccc2;font-size:12px;line-height:1.6;white-space:pre-wrap}
+  .archive-empty{padding:25px;text-align:center;color:#8f9b8d;border:1px dashed rgba(169,199,143,.2);border-radius:14px}
+  .archive-form{margin-top:18px;padding:16px;border:1px solid rgba(169,199,143,.18);border-radius:14px;background:rgba(0,0,0,.13)}
+  .archive-form h3{margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#dce6d8}
+  .archive-form label{display:block;margin:0 0 6px;color:#aeb9aa;font-size:11px;font-weight:800}
+  .archive-form input,.archive-form textarea{width:100%;border:1px solid rgba(169,199,143,.25);border-radius:10px;background:rgba(5,10,6,.58);color:#f2f5ef;padding:11px 12px;font:inherit}
+  .archive-form textarea{min-height:90px;resize:vertical}
+  .archive-form input:focus,.archive-form textarea:focus{outline:none;border-color:rgba(210,230,189,.65)}
+  .archive-form-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}
+  .archive-stars-input{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:2px;margin:0 0 12px}
+  .archive-stars-input input{position:absolute;opacity:0;pointer-events:none}
+  .archive-stars-input label{font-size:28px;line-height:1;color:#53604f;cursor:pointer;transition:.12s}
+  .archive-stars-input label:hover,.archive-stars-input label:hover~label,.archive-stars-input input:checked~label{color:#d2e6bd}
+  .archive-message{margin-top:10px;font-size:11px;color:#aeb9aa;min-height:16px}
+  .archive-message.error{color:#d6a3a3}
+  .archive-admin-state{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:#8f9b8d}
+  @media(max-width:980px){.archive-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:700px){
+    .archive-grid{grid-template-columns:1fr}
+    .archive-card-image{height:105px}
+    .archive-title-row{flex-direction:column}
+    .archive-form-row{grid-template-columns:1fr}
+  }
+
 </style>
 
 <style id="tt-about-v13">
@@ -1639,6 +1688,7 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
     <nav class="site-menu" aria-label="Huvudmeny">
       <button data-page="home" class="active">START</button>
       <button data-page="games">KOMMANDE SPEL</button>
+      <button data-page="archive">SPELARKIV</button>
       <button data-page="register">SPEL ANMÄLAN</button>
       <button data-page="about">OM OSS</button>
       <button data-page="gallery">GALLERI</button>
@@ -2020,6 +2070,19 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
       </div>
     </section>
 
+    <section id="mainArchive" class="site-page-main">
+      <div class="site-card">
+        <div class="site-inner">
+          <div class="site-eyebrow">Tingsryd Tactical</div>
+          <h1 class="site-title">Spelarkiv</h1>
+          <p class="site-lead">Här samlar vi spel som vi själva valt att arkivera. Läs om spelen och lämna en recension om du deltog.</p>
+          <div id="gameArchiveList" class="archive-grid">
+            <div class="archive-empty">Laddar spelarkivet...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="mainAdmin" class="site-page-main">
       <div class="site-card">
         <div class="site-inner">
@@ -2181,12 +2244,18 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
           </div>
 
           <div class="section-heading" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-            <span>Sparade spel</span>
+            <span>Kommande / aktiva spel</span>
             <button class="site-action" type="button" id="saveHomeGamesButton">SPARA STARTSIDANS SPEL</button>
           </div>
           <div id="adminHomeGameHint" class="admin-note" style="display:none;margin:8px 0 12px">Välj vilka spel som ska visas på startsidan och tryck sedan på SPARA STARTSIDANS SPEL.</div>
           <div id="adminGames" class="demo-game-list">
             <div class="demo-game"><span>Laddar...</span><span>Supabase</span></div>
+          </div>
+
+          <div class="section-heading" style="margin-top:24px">Arkiverade spel</div>
+          <div class="admin-note" style="margin:8px 0 12px">Här kan du se vilka spel som ligger i Spelarkiv och ta bort dem från arkivet utan att radera själva spelet eller recensionerna.</div>
+          <div id="adminArchivedGames" class="demo-game-list">
+            <div class="demo-game"><span>Laddar arkiverade spel...</span><span>Supabase</span></div>
           </div>
         </div>
       </div>
@@ -2204,6 +2273,7 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
 const mainPages = {
   home: document.getElementById("mainHome"),
   games: document.getElementById("mainGames"),
+  archive: document.getElementById("mainArchive"),
   gameinfo: document.getElementById("mainGameInfo"),
   register: document.getElementById("mainRegister"),
   about: document.getElementById("mainAbout"),
@@ -2293,6 +2363,9 @@ async function openMainPage(page, updateHash=true){
   if(page === "home" && typeof loadGames === "function"){
     loadGames();
   }
+  if(page === "archive" && typeof loadGameArchive === "function"){
+    loadGameArchive();
+  }
 }
 
 menuButtons.forEach(btn => btn.addEventListener("click", async () => {
@@ -2303,6 +2376,7 @@ menuButtons.forEach(btn => btn.addEventListener("click", async () => {
     loadGames();
   }
   if(btn.dataset.page==="gallery" || btn.dataset.page==="admin") loadGallery();
+  if(btn.dataset.page==="archive") loadGameArchive();
 }));
 
 document.querySelectorAll("[data-go]").forEach(btn => {
@@ -3002,13 +3076,246 @@ async function saveHomeGames(){
   }
 }
 
-function renderAdminGames(games) {
-  const list = document.getElementById("adminGames");
-  if (!games.length) {
-    list.innerHTML = '<div class="demo-game"><span>Inga spel skapade ännu</span><span>—</span></div>';
+
+let ttGameArchiveData = [];
+let ttArchiveSelectedGameId = "";
+
+function archiveStars(rating){
+  const n=Math.max(0,Math.min(5,Math.round(Number(rating)||0)));
+  return "★★★★★".slice(0,n)+"☆☆☆☆☆".slice(0,5-n);
+}
+
+function archiveDate(value){
+  if(!value) return "";
+  const p=String(value).split("-");
+  if(p.length===3) return p[2]+"/"+p[1]+"/"+p[0];
+  return String(value);
+}
+
+async function loadGameArchive(){
+  const list=document.getElementById("gameArchiveList");
+  if(!list) return;
+  try{
+    const result=await window.ttSbFetch('/rpc/tt_game_archive_public',{method:'POST',body:'{}'});
+    const rows=Array.isArray(result)?(result[0]&&Array.isArray(result[0].archives)?result[0].archives:[]):((result&&Array.isArray(result.archives))?result.archives:[]);
+    const games=Array.isArray(currentGames)&&currentGames.length?currentGames:((await window.ttSupabaseGames()).games||[]);
+    ttGameArchiveData=rows.map(a=>{
+      const g=games.find(x=>String(x.id)===String(a.game_id));
+      return Object.assign({},a,{game:g||null});
+    }).filter(a=>a.game);
+    renderGameArchive();
+    renderAdminArchivedGames();
+    // Uppdatera även Admin så arkiverade spel försvinner ur listan direkt.
+    if (Array.isArray(currentGames) && currentGames.length) {
+      renderAdminGames(currentGames);
+    }
+  }catch(err){
+    console.error('Spelarkiv:',err);
+    list.innerHTML='<div class="archive-empty">Kunde inte hämta spelarkivet.<br><small>'+escapeHtml(err.message||String(err))+'</small></div>';
+  }
+}
+
+async function loadArchiveReviews(gameId){
+  const rows=await window.ttSbFetch('/tt_game_reviews?select=rating,review_text,created_at&game_id=eq.'+encodeURIComponent(gameId)+'&order=created_at.desc',{method:'GET'});
+  return Array.isArray(rows)?rows:[];
+}
+
+function renderGameArchive(){
+  const list=document.getElementById('gameArchiveList');
+  if(!list)return;
+  if(!ttGameArchiveData.length){
+    list.innerHTML='<div class="archive-empty"><strong>Inga spel i arkivet ännu.</strong><br>Arkiverade spel kommer att visas här.</div>';
     return;
   }
-  list.innerHTML = games.map(g => `
+  list.innerHTML=ttGameArchiveData.map(a=>{
+    const g=a.game;
+    const image = String(g.image || "").trim();
+    const imageAttr = image ? ` data-archive-image="${escapeHtml(image)}"` : "";
+    return `<article class="archive-card" data-archive-card="${escapeHtml(a.game_id)}">
+      <div class="archive-card-image"${imageAttr}>${image ? "" : '<div class="archive-card-noimage">TT</div>'}</div>
+      <div class="archive-card-body">
+        <div class="archive-title-row">
+          <div>
+            <h2 class="archive-title">${escapeHtml(g.gameName)}</h2>
+            <div class="archive-meta">${escapeHtml(archiveDate(g.date))}${g.place?' • '+escapeHtml(g.place):''}${g.time?' • '+escapeHtml(g.time):''}${Number.isFinite(Number(a.participant_count))?' • '+Number(a.participant_count)+' deltagare':''}</div>
+          </div>
+          <div class="archive-admin-state">ARKIVERAT</div>
+        </div>
+        <div class="archive-summary">${escapeHtml(a.summary||'Ingen sammanfattning angiven.')}</div>
+        <div class="archive-rating" data-rating-for="${escapeHtml(a.game_id)}"><span class="archive-stars">☆☆☆☆☆</span><span class="archive-rating-text">Laddar betyg...</span></div>
+        <div class="archive-actions">
+          <button class="site-action" type="button" data-read-reviews="${escapeHtml(a.game_id)}">LÄS RECENSIONER</button>
+          ${a.reviews_enabled ? `<button class="site-action" type="button" data-leave-review="${escapeHtml(a.game_id)}">LÄMNA RECENSION</button>` : ''}
+        </div>
+        <div class="archive-detail" id="archiveDetail_${escapeHtml(a.game_id)}"></div>
+      </div>
+    </article>`;
+  }).join('');
+
+  list.querySelectorAll('[data-read-reviews]').forEach(btn=>btn.addEventListener('click',()=>openArchiveDetail(btn.dataset.readReviews,false)));
+  list.querySelectorAll('[data-leave-review]').forEach(btn=>btn.addEventListener('click',()=>openArchiveDetail(btn.dataset.leaveReview,true)));
+
+  list.querySelectorAll('.archive-card-image[data-archive-image]').forEach(el=>{
+    const imageUrl=el.getAttribute('data-archive-image');
+    if(!imageUrl)return;
+    el.style.backgroundImage=`url("${imageUrl.replace(/"/g,'\\"')}")`;
+    const probe=new Image();
+    probe.onerror=()=>{el.style.backgroundImage='';el.innerHTML='<div class="archive-card-noimage">TT</div>';};
+    probe.src=imageUrl;
+  });
+
+  ttGameArchiveData.forEach(a=>{
+    const el=document.querySelector(`[data-rating-for="${CSS.escape(String(a.game_id))}"]`);
+    if(!el)return;
+    const count=Number(a.review_count)||0;
+    const avg=Number(a.avg_rating)||0;
+    el.querySelector('.archive-stars').textContent=count?archiveStars(avg):'☆☆☆☆☆';
+    el.querySelector('.archive-rating-text').textContent=count?(avg.toFixed(1)+'/5 • '+count+(count===1?' recension':' recensioner')):'Inga recensioner ännu';
+  });
+}
+
+async function openArchiveDetail(gameId,showForm){
+  const detail=document.getElementById('archiveDetail_'+String(gameId).replace(/[^a-zA-Z0-9_-]/g,''));
+  if(!detail)return;
+  document.querySelectorAll('.archive-detail.show').forEach(el=>{if(el!==detail)el.classList.remove('show');});
+  detail.classList.add('show');
+  detail.innerHTML='<div class="archive-empty">Laddar recensioner...</div>';
+  try{
+    const reviews=await loadArchiveReviews(gameId);
+    let html='<h3 style="margin:0;color:#dce6d8;font-size:13px;text-transform:uppercase;letter-spacing:.08em">Recensioner</h3>';
+    html+=reviews.length?'<div class="archive-reviews">'+reviews.map(r=>`<div class="archive-review"><div class="archive-review-top"><span class="archive-review-stars">${archiveStars(r.rating)}</span><span class="archive-review-date">${escapeHtml(new Date(r.created_at).toLocaleDateString('sv-SE'))}</span></div>${r.review_text?`<div class="archive-review-text">${escapeHtml(r.review_text)}</div>`:''}</div>`).join('')+'</div>':'<div class="archive-empty" style="margin-top:12px">Ingen har lämnat en recension ännu.</div>';
+    if(showForm){
+      html+=`<form class="archive-form" data-review-form="${escapeHtml(gameId)}">
+        <h3>Lämna recension</h3>
+        <label>Betyg</label>
+        <div class="archive-stars-input">
+          <input id="review5_${escapeHtml(gameId)}" type="radio" name="rating_${escapeHtml(gameId)}" value="5"><label for="review5_${escapeHtml(gameId)}">★</label>
+          <input id="review4_${escapeHtml(gameId)}" type="radio" name="rating_${escapeHtml(gameId)}" value="4"><label for="review4_${escapeHtml(gameId)}">★</label>
+          <input id="review3_${escapeHtml(gameId)}" type="radio" name="rating_${escapeHtml(gameId)}" value="3"><label for="review3_${escapeHtml(gameId)}">★</label>
+          <input id="review2_${escapeHtml(gameId)}" type="radio" name="rating_${escapeHtml(gameId)}" value="2"><label for="review2_${escapeHtml(gameId)}">★</label>
+          <input id="review1_${escapeHtml(gameId)}" type="radio" name="rating_${escapeHtml(gameId)}" value="1"><label for="review1_${escapeHtml(gameId)}">★</label>
+        </div>
+        <div class="archive-form-row"><div><label for="reviewCode_${escapeHtml(gameId)}">Anmälningskod</label><input id="reviewCode_${escapeHtml(gameId)}" maxlength="20" autocomplete="off" placeholder="Koden du valde vid anmälan"></div><button class="site-action" type="submit">SKICKA RECENSION</button></div>
+        <div style="margin-top:12px"><label for="reviewText_${escapeHtml(gameId)}">Recension (valfritt)</label><textarea id="reviewText_${escapeHtml(gameId)}" maxlength="1500" placeholder="Berätta kort hur du upplevde spelet..."></textarea></div>
+        <div class="archive-message" data-review-message></div>
+      </form>`;
+    }
+    detail.innerHTML=html;
+    const form=detail.querySelector('[data-review-form]');
+    if(form) form.addEventListener('submit',e=>submitArchiveReview(e,gameId));
+    detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(err){
+    detail.innerHTML='<div class="archive-empty">Kunde inte hämta recensionerna.</div>';
+  }
+}
+
+async function submitArchiveReview(event,gameId){
+  event.preventDefault();
+  const form=event.currentTarget;
+  const msg=form.querySelector('[data-review-message]');
+  const code=form.querySelector('input[id^="reviewCode_"]').value.trim();
+  const ratingInput=form.querySelector('input[name="rating_'+gameId+'"]:checked');
+  const text=form.querySelector('textarea').value.trim();
+  if(!code){msg.className='archive-message error';msg.textContent='Ange din anmälningskod.';return;}
+  if(!ratingInput){msg.className='archive-message error';msg.textContent='Välj ett betyg mellan 1 och 5 stjärnor.';return;}
+  const button=form.querySelector('button[type="submit"]');
+  button.disabled=true; button.textContent='SKICKAR...'; msg.className='archive-message'; msg.textContent='';
+  try{
+    const result=await window.ttSbFetch('/rpc/tt_submit_game_review',{method:'POST',body:JSON.stringify({p_game_id:Number(gameId),p_cancellation_code:code,p_rating:Number(ratingInput.value),p_review_text:text||null})});
+    const data=Array.isArray(result)?(result[0]||{}):result;
+    if(!data||data.ok!==true)throw new Error((data&&data.error)||'Recensionen kunde inte sparas.');
+    msg.textContent='Tack för din recension!';
+    await loadGameArchive();
+    await openArchiveDetail(gameId,false);
+  }catch(err){
+    msg.className='archive-message error';msg.textContent=err.message||String(err);
+  }finally{button.disabled=false;button.textContent='SKICKA RECENSION';}
+}
+
+async function archiveGame(gameId){
+  const game=currentGames.find(g=>String(g.id)===String(gameId));
+  if(!game)return;
+  if(!(await window.ttEnsureSupabaseAdminPassword()))return;
+  const summary=window.prompt('ARKIVERA SPEL\n\nSkriv en kort sammanfattning av spelet:', '');
+  if(summary===null)return;
+  if(!summary.trim()){window.alert('En kort sammanfattning krävs.');return;}
+  try{
+    const result=await window.ttSbFetch('/rpc/tt_admin_archive_game',{method:'POST',body:JSON.stringify({p_password:ttAdminPassword,p_game_id:Number(gameId),p_summary:summary.trim(),p_reviews_enabled:true})});
+    const data=Array.isArray(result)?(result[0]||{}):result;
+    if(!data||data.ok!==true)throw new Error((data&&data.error)||'Spelet kunde inte arkiveras.');
+    window.alert('Spelet är nu arkiverat.');
+    await loadGameArchive();
+    renderAdminGames(currentGames);
+  }catch(err){window.alert('Kunde inte arkivera spelet: '+(err.message||String(err)));}
+}
+
+async function unarchiveGame(gameId){
+  const game=ttGameArchiveData.find(a=>String(a.game_id)===String(gameId));
+  const gameName=game && game.game ? game.game.gameName : 'detta spel';
+  if(!(await window.ttEnsureSupabaseAdminPassword())) return;
+  if(!window.confirm('Ta bort "'+gameName+'" från spelarkivet?\n\nSpelet och recensionerna behålls, men spelet visas inte längre publikt i Spelarkiv.')) return;
+  try{
+    const result=await window.ttSbFetch('/rpc/tt_admin_unarchive_game',{
+      method:'POST',
+      body:JSON.stringify({p_password:ttAdminPassword,p_game_id:Number(gameId)})
+    });
+    const data=Array.isArray(result)?(result[0]||{}):result;
+    if(!data || data.ok!==true) throw new Error((data&&data.error)||'Spelet kunde inte tas bort från arkivet.');
+    await loadGameArchive();
+    renderAdminGames(currentGames);
+    window.alert('Spelet är borttaget från Spelarkiv.');
+  }catch(err){
+    window.alert('Kunde inte ta bort spelet från arkivet: '+(err.message||String(err)));
+  }
+}
+
+function renderAdminArchivedGames(){
+  const list=document.getElementById('adminArchivedGames');
+  if(!list) return;
+  const rows=Array.isArray(ttGameArchiveData)?ttGameArchiveData:[];
+  if(!rows.length){
+    list.innerHTML='<div class="demo-game"><span>Inga arkiverade spel</span><span>Spelarkiv är tomt</span></div>';
+    return;
+  }
+  list.innerHTML=rows.map(a=>{
+    const g=a.game||{};
+    return `<div class="demo-game admin-archived-game-row">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        ${g.image?`<img src="${escapeHtml(g.image)}" alt="" style="width:48px;height:34px;object-fit:cover;border-radius:7px;border:1px solid rgba(169,199,143,.18);flex:0 0 auto">`:''}
+        <div style="min-width:0">
+          <strong>${escapeHtml(g.gameName||'Arkiverat spel')}</strong>
+          <div style="margin-top:4px;color:#8f9b8d;font-size:10px">${escapeHtml(g.date||'')}${g.place?' • '+escapeHtml(g.place):''}</div>
+        </div>
+      </div>
+      <div class="admin-game-actions">
+        <button class="site-action" type="button" data-unarchive-game="${escapeHtml(a.game_id)}">TA BORT FRÅN ARKIV</button>
+      </div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('[data-unarchive-game]').forEach(btn=>btn.addEventListener('click',()=>unarchiveGame(btn.dataset.unarchiveGame)));
+}
+
+function renderAdminGames(games) {
+  const list = document.getElementById("adminGames");
+  if (!list) return;
+
+  // Arkiverade spel ska inte ligga kvar bland de vanliga spelen i Admin.
+  // De hanteras istället via Spelarkiv.
+  const archivedIds = new Set(
+    (Array.isArray(ttGameArchiveData) ? ttGameArchiveData : [])
+      .map(a => String(a.game_id))
+  );
+  const activeGames = (Array.isArray(games) ? games : [])
+    .filter(g => !archivedIds.has(String(g.id)));
+
+  if (!activeGames.length) {
+    list.innerHTML = games && games.length
+      ? '<div class="demo-game"><span>Alla sparade spel är arkiverade</span><span>Se SPELARKIV</span></div>'
+      : '<div class="demo-game"><span>Inga kommande/aktiva spel skapade ännu</span><span>—</span></div>';
+    return;
+  }
+
+  list.innerHTML = activeGames.map(g => `
     <div class="demo-game" style="align-items:center">
       <div style="display:flex;align-items:center;gap:12px;min-width:0">
         <div class="home-game-select" title="Visa detta spel på startsidan" style="display:flex;align-items:center;gap:8px;cursor:default;white-space:nowrap" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" onpointerdown="event.stopPropagation()">
@@ -3024,12 +3331,16 @@ function renderAdminGames(games) {
       </div>
       <div class="admin-game-actions">
         <button class="site-action" type="button" data-edit-game="${escapeHtml(g.id)}">ÄNDRA</button>
+        <button class="site-action" type="button" data-archive-game="${escapeHtml(g.id)}">ARKIVERA</button>
         <button class="site-action" type="button" data-delete-game="${escapeHtml(g.id)}">TA BORT</button>
       </div>
     </div>
   `).join("");
   list.querySelectorAll("[data-edit-game]").forEach(btn => {
     btn.addEventListener("click", () => editGame(btn.dataset.editGame));
+  });
+  list.querySelectorAll("[data-archive-game]").forEach(btn => {
+    btn.addEventListener("click", () => archiveGame(btn.dataset.archiveGame));
   });
   list.querySelectorAll("[data-delete-game]").forEach(btn => {
     btn.addEventListener("click", () => deleteGame(btn.dataset.deleteGame));
@@ -3203,6 +3514,7 @@ function loadGames() {
 
         renderSelectedGameBanner();
         refresh();
+        loadGameArchive();
         return currentGames;
       })
       .catch(err => {
@@ -4593,6 +4905,16 @@ window.addEventListener("error",function(e){
     font-size:17px!important;
     line-height:1.25!important;
   }
+}
+</style>
+
+<style>
+.admin-archived-game-row{align-items:center!important;}
+.admin-archived-game-row .admin-game-actions{margin-left:auto;}
+@media(max-width:700px){
+  .admin-archived-game-row{align-items:flex-start!important;gap:10px!important;}
+  .admin-archived-game-row .admin-game-actions{width:100%;margin-left:0;}
+  .admin-archived-game-row .admin-game-actions .site-action{width:100%;}
 }
 </style>
 </body>
