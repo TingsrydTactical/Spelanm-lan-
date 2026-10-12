@@ -1539,6 +1539,12 @@
 .tt-public-roster-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px}
 .tt-public-roster-title{margin:0;color:#f4f6f1;font-size:18px;font-weight:900;letter-spacing:.02em}
 .tt-public-roster-sub{margin:6px 0 0;color:#bccb9d;font-size:12px;line-height:1.5}
+.tt-roster-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:13px 15px;border:1px solid rgba(169,199,143,.28);border-radius:11px;background:rgba(145,172,126,.10);color:#dce8d5;font-size:11px;font-weight:900;letter-spacing:.08em;cursor:pointer;text-align:left}
+.tt-roster-toggle:hover{background:rgba(145,172,126,.18);border-color:rgba(176,207,152,.5)}
+.tt-roster-toggle-icon{font-size:20px;line-height:1;color:#b0cf98;transition:transform .18s ease}
+.tt-roster-toggle[aria-expanded="true"] .tt-roster-toggle-icon{transform:rotate(180deg)}
+.tt-roster-content[hidden]{display:none}
+.tt-roster-content{margin-top:13px}
 .tt-roster-count{padding:8px 11px;border:1px solid rgba(169,199,143,.24);border-radius:10px;background:rgba(169,199,143,.08);color:#d8e9ce;font-size:12px;font-weight:800;white-space:nowrap}
 .tt-roster-tools{display:flex;gap:10px;margin-bottom:12px}
 .tt-roster-search{flex:1;min-width:0;width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid rgba(169,199,143,.22);border-radius:10px;background:#0b120c;color:#f4f6f1;font:inherit}
@@ -1804,12 +1810,18 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
               </div>
               <div class="tt-roster-count" id="ttRosterCount">Välj ett spel</div>
             </div>
-            <div class="tt-roster-tools">
-              <input class="tt-roster-search" id="ttRosterSearch" type="search" placeholder="Sök efter ditt namn…" aria-label="Sök bland deltagarna">
-              <button class="tt-roster-refresh" id="ttRosterRefresh" type="button">UPPDATERA</button>
-            </div>
-            <div class="tt-roster-list" id="ttRosterList" aria-live="polite">
-              <div class="tt-roster-state">Öppna ett spel för att se dess deltagarlista.</div>
+            <button class="tt-roster-toggle" id="ttRosterToggle" type="button" aria-expanded="false" aria-controls="ttRosterContent">
+              <span id="ttRosterToggleLabel">VISA DELTAGARLISTA</span>
+              <span class="tt-roster-toggle-icon" aria-hidden="true">⌄</span>
+            </button>
+            <div class="tt-roster-content" id="ttRosterContent" hidden>
+              <div class="tt-roster-tools">
+                <input class="tt-roster-search" id="ttRosterSearch" type="search" placeholder="Sök efter ditt namn…" aria-label="Sök bland deltagarna">
+                <button class="tt-roster-refresh" id="ttRosterRefresh" type="button">UPPDATERA</button>
+              </div>
+              <div class="tt-roster-list" id="ttRosterList" aria-live="polite">
+                <div class="tt-roster-state">Öppna ett spel för att se dess deltagarlista.</div>
+              </div>
             </div>
           </section>
         </div>
@@ -2402,7 +2414,17 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
     if(event.target && event.target.id === 'ttRosterSearch') renderRoster();
   });
   document.addEventListener('click', function(event){
-    if(event.target && event.target.id === 'ttRosterRefresh') loadPublicRoster(rosterGameId);
+    const toggle = event.target && event.target.closest ? event.target.closest('#ttRosterToggle') : null;
+    if(toggle){
+      const content = document.getElementById('ttRosterContent');
+      const label = document.getElementById('ttRosterToggleLabel');
+      const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!isOpen));
+      if(content) content.hidden = isOpen;
+      if(label) label.textContent = isOpen ? 'VISA DELTAGARLISTA' : 'DÖLJ DELTAGARLISTA';
+      return;
+    }
+    if(event.target && event.target.closest && event.target.closest('#ttRosterRefresh')) loadPublicRoster(rosterGameId);
   });
 })();
 </script>
