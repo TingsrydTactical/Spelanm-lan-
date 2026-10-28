@@ -1696,6 +1696,31 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
 }
 </style>
 <style id="tt-admin-reviews-v1">.admin-reviews-panel{margin-top:10px;padding:10px;border-top:1px solid rgba(169,199,143,.14);background:rgba(4,9,5,.25);border-radius:9px}.admin-review-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(169,199,143,.10)}.admin-review-row:last-child{border-bottom:0}.admin-review-content{flex:1;min-width:0}.admin-review-head{display:flex;gap:10px;align-items:center;color:#8f9b8d;font-size:10px}.admin-review-text{margin-top:7px;color:#dce6d8;font-size:11px;line-height:1.55;white-space:pre-wrap}.admin-review-text.muted{color:#778274}.admin-review-row .site-action.danger{border-color:rgba(210,105,105,.42)}.admin-review-empty{padding:10px;color:#8f9b8d;font-size:10px}@media(max-width:700px){.admin-review-row{flex-direction:column}.admin-review-row .site-action{width:100%}}</style>
+
+<style id="tt-equipment-card-fix">
+/* Låneutrustning direkt på spelkortet */
+.game-equipment-toggle{
+  display:flex; width:100%; min-height:0; box-sizing:border-box; align-items:center; justify-content:space-between; gap:12px;
+  margin-top:12px; padding:11px 13px; border:1px solid rgba(169,199,143,.25); border-radius:11px;
+  background:rgba(145,172,126,.08); color:#dce7d7; font:inherit; font-size:11px; font-weight:900; letter-spacing:.06em;
+  text-align:left; cursor:pointer; box-shadow:none; line-height:1.35;
+}
+.game-equipment-toggle:hover{background:rgba(145,172,126,.15)}
+.game-equipment-toggle-hint{color:#b0cf98; font-size:9px; letter-spacing:.02em; text-transform:none; white-space:nowrap; font-weight:700}
+.game-equipment-panel{margin-top:10px; padding:13px; border:1px solid rgba(169,199,143,.19); border-radius:12px; background:rgba(3,8,4,.34); color:#dce7d7; font-size:12px; line-height:1.5}
+.game-equipment-panel[hidden]{display:none}
+.game-equipment-panel-intro{color:#bccb9d; font-size:11px; line-height:1.5}
+.game-equipment-panel .equipment-list{display:grid; gap:9px; margin-top:10px}
+.game-equipment-panel .equipment-item{display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px; padding:12px; border:1px solid rgba(169,199,143,.18); border-radius:12px; background:rgba(3,8,4,.3)}
+.game-equipment-panel .equipment-item h3{margin:0 0 5px; color:#e3e9df; font-size:13px}
+.game-equipment-panel .equipment-item p{margin:0 0 8px; color:#bccb9d; font-size:12px}
+.game-equipment-panel .equipment-actions{display:flex; align-items:center; justify-content:flex-end; gap:7px}
+.game-equipment-panel .equipment-actions button{width:auto; min-height:0; padding:9px 10px; font-size:10px}
+.game-equipment-panel .equipment-state{display:inline-block; color:#a7cc8b; font-size:10px; font-weight:900; text-transform:uppercase}
+.game-equipment-panel .equipment-state.booked{color:#d99489}
+@media(max-width:650px){.game-equipment-toggle{align-items:flex-start; flex-direction:row}.game-equipment-toggle-hint{white-space:normal; text-align:right}.game-equipment-panel .equipment-item{grid-template-columns:minmax(0,1fr)}.game-equipment-panel .equipment-actions{justify-content:flex-start}.game-equipment-panel .equipment-actions button{flex:0 1 auto}}
+</style>
+
 </head>
 <body>
 
@@ -3029,7 +3054,6 @@ function renderGames(games) {
             <div class="game-equipment-panel-intro">Utrustning som går att tinga till just det här spelet.</div>
             <div class="equipment-list" data-equipment-list-for="${escapeHtml(g.id || "")}"><div class="admin-participant-empty">Laddar utrustning...</div></div>
             <div class="admin-note" data-equipment-message-for="${escapeHtml(g.id || "")}" style="display:none"></div>
-            <div class="equipment-local-note">Tingningar sparas i Supabase och uppdateras för alla besökare.</div>
           </div>
         </div>
       </article>`;
