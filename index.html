@@ -3435,6 +3435,10 @@ async function loadGameArchive(){
     if (Array.isArray(currentGames) && currentGames.length) {
       renderAdminGames(currentGames);
     }
+    // Uppdatera även låneutrustningens väljare när arkivstatusen är känd.
+    if (typeof window.ttRefreshEquipmentGamePickers === 'function') {
+      window.ttRefreshEquipmentGamePickers();
+    }
   }catch(err){
     console.error('Spelarkiv:',err);
     list.innerHTML='<div class="archive-empty">Kunde inte hämta spelarkivet.<br><small>'+escapeHtml(err.message||String(err))+'</small></div>';
@@ -3870,6 +3874,7 @@ function loadGames() {
         populateGameInfoAdminPicker();
         populateRegistrationGamePicker();
         if (typeof window.ttRefreshEquipmentPrototype === "function") window.ttRefreshEquipmentPrototype();
+        if (typeof window.ttRefreshEquipmentGamePickers === "function") window.ttRefreshEquipmentGamePickers();
 
         if (selectedRegistrationGameId && !getSelectedRegistrationGame()) {
           selectedRegistrationGameId = "";
@@ -5397,6 +5402,9 @@ window.addEventListener("error",function(e){
   }
 }
 
+</style>
+
+<script>
 /* ===== LÅNEUTRUSTNING – Supabase ===== */
 (function(){
   const $=id=>document.getElementById(id);
@@ -5412,8 +5420,60 @@ window.addEventListener("error",function(e){
     return d;
   }
   function gameName(id){const g=(Array.isArray(window.currentGames)?window.currentGames:[]).find(x=>String(x.id)===String(id));return g?(g.gameName||g.namn||'Spel'):'Valt spel';}
-  function activeGameOptions(){return (Array.isArray(window.currentGames)?window.currentGames:[]).filter(g=>String(g.status||'Öppen')!=='Genomförd').map(g=>({id:String(g.id),name:g.gameName||g.namn||'Spel',date:g.date||g.datum||''}));}
-  function fillSelect(id,keep){const el=$(id);if(!el)return;const old=keep||el.value;const opts=activeGameOptions();el.innerHTML='<option value="">Välj spel...</option>'+opts.map(g=>`<option value="${safe(g.id)}">${safe(g.name)}${g.date?' – '+safe(g.date):''}</option>`).join('');if(opts.some(g=>g.id===String(old)))el.value=String(old);}
+  function activeGameOptions(sourceGames){
+    // Visa endast spel som fortfarande är öppna/aktiva:
+    // genomförda spel och spel som finns i Spelarkiv ska bort.
+    const games = Array.isArray(sourceGames) ? sourceGames :
+      (Array.isArray(window.currentGames) ? window.currentGames : []);
+    // ttGameArchiveData deklareras med let i sidans globala skript och är därför
+    // inte automatiskt en egenskap på window. Läs den globala variabeln säkert.
+    let archiveRows = [];
+    try {
+      if (typeof ttGameArchiveData !== 'undefined' && Array.isArray(ttGameArchiveData)) {
+        archiveRows = ttGameArchiveData;
+      } else if (Array.isArray(window.ttGameArchiveData)) {
+        archiveRows = window.ttGameArchiveData;
+      }
+    } catch (_) {}
+    const archivedIds = new Set(archiveRows.map(a => String(a.game_id)));
+    const seen = new Set();
+    return games.filter(g => g && g.id != null && String(g.id).trim() !== '')
+      .filter(g => String(g.status || 'Öppen').trim().toLocaleLowerCase('sv') !== 'genomförd')
+      .filter(g => !archivedIds.has(String(g.id)))
+      .filter(g => { const id=String(g.id); if(seen.has(id)) return false; seen.add(id); return true; })
+      .map(g => ({id:String(g.id),name:g.gameName||g.namn||g.name||('Spel '+g.id),date:g.date||g.datum||''}));
+  }
+  function fillSelect(id,keep,providedGames){
+    const el=$(id);if(!el)return;
+    const old=keep||el.value;
+    const opts=activeGameOptions(Array.isArray(providedGames)?providedGames:undefined)
+      .filter(g=>g&&g.id!=null);
+    el.innerHTML='<option value="">'+(opts.length?'Välj spel...':'Inga spel hittades')+'</option>'+
+      opts.map(g=>`<option value="${safe(g.id)}">${safe(g.name)}${g.date?' – '+safe(g.date):''}</option>`).join('');
+    if(opts.some(g=>g.id===String(old)))el.value=String(old);
+  }
+  let pickerLoadPromise=null;
+  async function loadPickerGames(){
+    if(pickerLoadPromise)return pickerLoadPromise;
+    pickerLoadPromise=(async()=>{
+      let games=activeGameOptions();
+      try{
+        if(typeof window.ttSupabaseGames==='function'){
+          const result=await window.ttSupabaseGames();
+          if(result&&result.ok&&Array.isArray(result.games)){
+            // Use the returned list directly; do not depend on a separately
+            // populated cache or a particular normalization timing.
+            games=result.games;
+            window.currentGames=games;
+          }
+        }
+      }catch(err){console.error('Could not load games for equipment selector:',err);}
+      fillSelect('equipmentAdminGame','',games);
+      fillSelect('equipmentPublicGame','',games);
+      return games;
+    })().finally(()=>{pickerLoadPromise=null;});
+    return pickerLoadPromise;
+  }
   function message(id,text,error=false){const el=$(id);if(!el)return;el.style.display=text?'block':'none';el.textContent=text||'';el.style.borderLeftColor=error?'#b97878':'var(--accent)';}
   function resetForm(){selectedEditId='';if($('equipmentItemId'))$('equipmentItemId').value='';if($('equipmentItemName'))$('equipmentItemName').value='';if($('equipmentItemDescription'))$('equipmentItemDescription').value='';if($('equipmentSaveButton'))$('equipmentSaveButton').textContent='LÄGG TILL UTRUSTNING';if($('equipmentCancelEdit'))$('equipmentCancelEdit').style.display='none';}
   async function loadAdmin(){
@@ -5460,9 +5520,16 @@ window.addEventListener("error",function(e){
   $('equipmentCancelEdit')?.addEventListener('click',resetForm);
   document.querySelectorAll('.site-menu button[data-page="admin"]').forEach(b=>b.addEventListener('click',()=>setTimeout(()=>{fillSelect('equipmentAdminGame');loadAdmin();},150)));
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshOpenPanels();});
-  window.ttRefreshEquipmentPrototype=refresh;window.ttRenderPublicEquipment=renderPublic;
+  window.ttRefreshEquipmentPrototype=refresh;window.ttRefreshEquipmentGamePickers=refreshGamePickers;window.ttRenderPublicEquipment=renderPublic;
   window.ttRefreshEquipmentAdmin=loadAdmin;
-  setTimeout(()=>{fillSelect('equipmentAdminGame');fillSelect('equipmentPublicGame');},800);
+  function refreshGamePickers(){
+    loadPickerGames().then(games=>{
+      // Retry briefly while the site's asynchronous game list is still loading.
+      if(!games.length)setTimeout(refreshGamePickers,1500);
+    });
+  }
+  document.addEventListener('DOMContentLoaded',refreshGamePickers);
+  setTimeout(refreshGamePickers,800);
 })();
 </script>
 
