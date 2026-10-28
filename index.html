@@ -2305,7 +2305,7 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
             <div id="equipmentAdminMessage" class="admin-note" style="display:none"></div>
             <div class="section-heading">Utrustning och tingningar för valt spel</div>
             <div id="equipmentAdminList" class="equipment-list"><div class="admin-participant-empty">Välj ett spel för att hantera utrustningen.</div></div>
-            <p class="equipment-local-note">Prototyp: data sparas i localStorage på den här datorn. När funktionen är godkänd kopplar vi den till Supabase för delad, permanent bokning.</p>
+            <p class="equipment-local-note">Utrustningen och tingningarna sparas i Supabase och delas mellan alla besökare.</p>
           </div>
 
           <div class="section-heading">Deltagare</div>
@@ -3029,7 +3029,7 @@ function renderGames(games) {
             <div class="game-equipment-panel-intro">Utrustning som går att tinga till just det här spelet.</div>
             <div class="equipment-list" data-equipment-list-for="${escapeHtml(g.id || "")}"><div class="admin-participant-empty">Laddar utrustning...</div></div>
             <div class="admin-note" data-equipment-message-for="${escapeHtml(g.id || "")}" style="display:none"></div>
-            <div class="equipment-local-note">Testversion: tingningar sparas bara i den här webbläsaren.</div>
+            <div class="equipment-local-note">Tingningar sparas i Supabase och uppdateras för alla besökare.</div>
           </div>
         </div>
       </article>`;
@@ -5373,94 +5373,72 @@ window.addEventListener("error",function(e){
   }
 }
 
-/* ===== LÅNEUTRUSTNING – lokal testprototyp ===== */
-.equipment-public-toolbar,.equipment-admin-toolbar{margin:22px 0 16px;padding:15px;border:1px solid rgba(169,199,143,.22);border-radius:13px;background:rgba(8,16,9,.35)}
-.equipment-public-toolbar label,.equipment-admin-toolbar label{display:block;color:#c6d0c1;font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;margin:0 0 8px}
-.equipment-public-toolbar select,.equipment-admin-toolbar select{width:100%;box-sizing:border-box;border:1px solid rgba(169,199,143,.28);border-radius:10px;padding:12px;background:rgba(7,14,8,.82);color:#e7eee2;font:inherit;font-size:13px}
-.equipment-list{display:grid;gap:10px;margin-top:14px}
-.equipment-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:16px;border:1px solid rgba(169,199,143,.22);border-radius:13px;background:rgba(8,16,9,.38)}
-.equipment-item h3{margin:0 0 6px;font-size:15px;color:#edf4e9;text-transform:uppercase}
-.equipment-item p{margin:0;color:#bccb9d;font-size:12px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
-.equipment-item .equipment-state{display:inline-block;margin-top:8px;font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#b0cf98}
-.equipment-item .equipment-state.booked{color:#e5a59a}
-.equipment-item .equipment-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
-.equipment-item .equipment-actions button{width:auto;padding:10px 12px;font-size:10px}
-.equipment-item .equipment-booking-list{grid-column:1/-1;padding-top:10px;border-top:1px solid rgba(169,199,143,.14);color:#bccb9d;font-size:11px;line-height:1.6}
-.equipment-local-note{margin:16px 0 0;color:#9aa88f;font-size:10px;line-height:1.5}
-.game-equipment-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin-top:12px;padding:12px 13px;border:1px solid rgba(169,199,143,.25);border-radius:11px;background:rgba(145,172,126,.08);color:#dce7d7;font-size:10px;font-weight:900;letter-spacing:.07em;text-align:left}
-.game-equipment-toggle:hover{background:rgba(145,172,126,.15)}
-.game-equipment-toggle-hint{color:#b0cf98;font-size:9px;letter-spacing:.02em;text-transform:none;white-space:nowrap}
-.game-equipment-panel{margin-top:10px;padding:13px;border:1px solid rgba(169,199,143,.19);border-radius:12px;background:rgba(3,8,4,.34)}
-.game-equipment-panel[hidden]{display:none}
-.game-equipment-panel-intro{color:#bccb9d;font-size:11px;line-height:1.5}
-.game-equipment-panel .equipment-list{margin-top:10px}
-.game-equipment-panel .equipment-item{padding:12px;grid-template-columns:minmax(0,1fr) auto}
-.game-equipment-panel .equipment-item h3{font-size:13px}
-.game-equipment-panel .equipment-item .equipment-actions button{padding:9px 10px}
-.game-equipment-panel .equipment-local-note{margin-top:10px}
-@media(max-width:650px){.equipment-item{grid-template-columns:1fr}.equipment-item .equipment-actions{justify-content:flex-start}.equipment-item .equipment-actions button{flex:1}.equipment-item .equipment-booking-list{grid-column:auto}.game-equipment-panel .equipment-item{grid-template-columns:1fr}.game-equipment-toggle{align-items:flex-start;flex-direction:column}.game-equipment-toggle-hint{white-space:normal}}
-</style>
-
-<script>
-/* ===== LÅNEUTRUSTNING – lokal testprototyp =====
-   Lokal lagring för att kunna testa gränssnitt och flöde innan Supabase-RPC
-   och tabeller kopplas in. Bokningar är per spel och per specifikt objekt.
-*/
+/* ===== LÅNEUTRUSTNING – Supabase ===== */
 (function(){
-  const STORE='tt_equipment_prototype_v1';
   const $=id=>document.getElementById(id);
   let records=[];
   let selectedEditId='';
-  function read(){try{const v=JSON.parse(localStorage.getItem(STORE)||'[]');records=Array.isArray(v)?v:[];}catch(_){records=[];}}
-  function write(){try{localStorage.setItem(STORE,JSON.stringify(records));return true;}catch(_){return false;}}
-  function safe(v){return typeof escapeHtml==='function'?escapeHtml(v):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  const safe=v=>typeof escapeHtml==='function'?escapeHtml(v):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const adminPassword=()=>typeof ttAdminPassword!=='undefined'?ttAdminPassword:'';
+  async function rpc(name,args={}){
+    if(typeof window.ttSbFetch!=='function')throw new Error('Supabase är inte redo. Ladda om sidan och försök igen.');
+    const raw=await window.ttSbFetch('/rpc/'+name,{method:'POST',body:JSON.stringify(args)});
+    const d=Array.isArray(raw)?raw[0]:raw;
+    if(d&&d.ok===false)throw new Error(d.error||'Supabase-anropet misslyckades.');
+    return d;
+  }
   function gameName(id){const g=(Array.isArray(window.currentGames)?window.currentGames:[]).find(x=>String(x.id)===String(id));return g?(g.gameName||g.namn||'Spel'):'Valt spel';}
   function activeGameOptions(){return (Array.isArray(window.currentGames)?window.currentGames:[]).filter(g=>String(g.status||'Öppen')!=='Genomförd').map(g=>({id:String(g.id),name:g.gameName||g.namn||'Spel',date:g.date||g.datum||''}));}
   function fillSelect(id,keep){const el=$(id);if(!el)return;const old=keep||el.value;const opts=activeGameOptions();el.innerHTML='<option value="">Välj spel...</option>'+opts.map(g=>`<option value="${safe(g.id)}">${safe(g.name)}${g.date?' – '+safe(g.date):''}</option>`).join('');if(opts.some(g=>g.id===String(old)))el.value=String(old);}
   function message(id,text,error=false){const el=$(id);if(!el)return;el.style.display=text?'block':'none';el.textContent=text||'';el.style.borderLeftColor=error?'#b97878':'var(--accent)';}
   function resetForm(){selectedEditId='';if($('equipmentItemId'))$('equipmentItemId').value='';if($('equipmentItemName'))$('equipmentItemName').value='';if($('equipmentItemDescription'))$('equipmentItemDescription').value='';if($('equipmentSaveButton'))$('equipmentSaveButton').textContent='LÄGG TILL UTRUSTNING';if($('equipmentCancelEdit'))$('equipmentCancelEdit').style.display='none';}
-  function renderAdmin(){const el=$('equipmentAdminList');if(!el)return;const gameId=$('equipmentAdminGame')?.value||'';if(!gameId){el.innerHTML='<div class="admin-participant-empty">Välj ett spel för att hantera utrustningen.</div>';return;}const rows=records.filter(x=>String(x.gameId)===String(gameId));if(!rows.length){el.innerHTML='<div class="admin-participant-empty">Ingen låneutrustning upplagd för '+safe(gameName(gameId))+'.</div>';return;}el.innerHTML=rows.map(x=>{const bookings=Array.isArray(x.bookings)?x.bookings:[];return `<article class="equipment-item"><div><h3>${safe(x.name)}</h3>${x.description?`<p>${safe(x.description)}</p>`:''}<span class="equipment-state ${bookings.length?'booked':''}">${bookings.length?'Tingad':'Ledig'}</span>${bookings.length?`<div class="equipment-booking-list">${bookings.map(b=>`Tingad av: <strong>${safe(b.name)}</strong> <button class="site-action" type="button" data-equipment-unbook="${safe(x.id)}" data-booking-id="${safe(b.id)}" style="width:auto;padding:6px 8px;margin-left:6px">AVBOKA</button>`).join('<br>')}</div>`:''}</div><div class="equipment-actions"><button class="site-action" type="button" data-equipment-edit="${safe(x.id)}">ÄNDRA</button><button class="site-action" type="button" data-equipment-delete="${safe(x.id)}">TA BORT</button></div></article>`;}).join('');el.querySelectorAll('[data-equipment-edit]').forEach(b=>b.addEventListener('click',()=>{const x=records.find(r=>r.id===b.dataset.equipmentEdit);if(!x)return;selectedEditId=x.id;$('equipmentItemId').value=x.id;$('equipmentItemName').value=x.name||'';$('equipmentItemDescription').value=x.description||'';$('equipmentSaveButton').textContent='SPARA ÄNDRING';$('equipmentCancelEdit').style.display='inline-flex';$('equipmentItemName').focus();}));el.querySelectorAll('[data-equipment-delete]').forEach(b=>b.addEventListener('click',()=>{const x=records.find(r=>r.id===b.dataset.equipmentDelete);if(!x||!confirm('Ta bort '+x.name+' från detta spel? Eventuella tingningar tas också bort.'))return;records=records.filter(r=>r.id!==x.id);write();renderAdmin();renderPublic();message('equipmentAdminMessage','Utrustningen togs bort.');}));el.querySelectorAll('[data-equipment-unbook]').forEach(b=>b.addEventListener('click',()=>{const x=records.find(r=>r.id===b.dataset.equipmentUnbook);if(!x)return;x.bookings=(x.bookings||[]).filter(v=>v.id!==b.dataset.bookingId);write();renderAdmin();renderPublic();message('equipmentAdminMessage','Tingningen avbokades.');}));}
-  function renderPublic(gameIdOverride, targetOverride, messageOverride){
-    const el = targetOverride || $('equipmentPublicList');
-    if(!el)return;
-    const gameId = gameIdOverride || $('equipmentPublicGame')?.value || '';
-    const msgEl = messageOverride || $('equipmentPublicMessage');
-    const showMessage = (text,error=false) => { if(!msgEl)return; msgEl.style.display=text?'block':'none'; msgEl.textContent=text||''; msgEl.style.borderLeftColor=error?'#b97878':'var(--accent)'; };
-    if(!gameId){el.innerHTML='<div class="admin-participant-empty">Välj ett spel för att se tillgänglig utrustning.</div>';return;}
-    const rows=records.filter(x=>String(x.gameId)===String(gameId));
-    if(!rows.length){el.innerHTML='<div class="admin-participant-empty">Ingen låneutrustning upplagd för det här spelet ännu.</div>';return;}
-    el.innerHTML=rows.map(x=>{const bookings=Array.isArray(x.bookings)?x.bookings:[],booked=bookings.length>0;return `<article class="equipment-item"><div><h3>${safe(x.name)}</h3>${x.description?`<p>${safe(x.description)}</p>`:''}<span class="equipment-state ${booked?'booked':''}">${booked?'Redan tingad':'Ledig'}</span></div><div class="equipment-actions"><button class="site-action" type="button" data-equipment-book="${safe(x.id)}" ${booked?'disabled':''}>${booked?'UPPTAGEN':'TINGA DENNA'}</button></div></article>`;}).join('');
-    el.querySelectorAll('[data-equipment-book]').forEach(b=>b.addEventListener('click',()=>{
-      const x=records.find(r=>r.id===b.dataset.equipmentBook);if(!x||x.bookings?.length)return;
-      const name=prompt('Ange ditt namn för att tinga '+x.name+':');if(name===null)return;
-      if(!name.trim()){showMessage('Du behöver ange ditt namn för att tinga utrustningen.',true);return;}
-      x.bookings=[{id:'b_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),name:name.trim(),createdAt:new Date().toISOString()}];
-      if(!write()){showMessage('Kunde inte spara i webbläsaren. Kontrollera lagringsutrymmet.',true);return;}
-      showMessage('Utrustningen är tingad i den här webbläsarens prototyp.');
-      renderPublic(gameId,el,msgEl);renderAdmin();
-      // Keep any other currently open game-card panels in sync.
-      document.querySelectorAll('[data-equipment-panel-for]:not([hidden])').forEach(panel=>{
-        const id=panel.getAttribute('data-equipment-panel-for');
-        if(id!==String(gameId))renderPublic(id,panel.querySelector('[data-equipment-list-for]'),panel.querySelector('[data-equipment-message-for]'));
-      });
-    }));
+  async function loadAdmin(){
+    const el=$('equipmentAdminList');if(!el)return;
+    const gameId=$('equipmentAdminGame')?.value||'';
+    if(!gameId){el.innerHTML='<div class="admin-participant-empty">Välj ett spel för att hantera utrustningen.</div>';return;}
+    el.innerHTML='<div class="admin-participant-empty">Hämtar utrustning...</div>';
+    try{
+      const d=await rpc('tt_admin_equipment_list',{p_password:adminPassword(),p_game_id:Number(gameId)});
+      records=Array.isArray(d.items)?d.items:[];
+      if(!records.length){el.innerHTML='<div class="admin-participant-empty">Ingen låneutrustning upplagd för '+safe(gameName(gameId))+'.</div>';return;}
+      el.innerHTML=records.map(x=>`<article class="equipment-item"><div><h3>${safe(x.name)}</h3>${x.description?`<p>${safe(x.description)}</p>`:''}<span class="equipment-state ${x.booked?'booked':''}">${x.booked?'Tingad':'Ledig'}</span>${x.booking_name?`<div class="equipment-booking-list">Tingad av: <strong>${safe(x.booking_name)}</strong> <button class="site-action" type="button" data-equipment-unbook="${safe(x.id)}" style="width:auto;padding:6px 8px;margin-left:6px">AVBOKA</button></div>`:''}</div><div class="equipment-actions"><button class="site-action" type="button" data-equipment-edit="${safe(x.id)}">ÄNDRA</button><button class="site-action" type="button" data-equipment-delete="${safe(x.id)}">TA BORT</button></div></article>`).join('');
+      el.querySelectorAll('[data-equipment-edit]').forEach(b=>b.addEventListener('click',()=>{const x=records.find(r=>String(r.id)===b.dataset.equipmentEdit);if(!x)return;selectedEditId=String(x.id);$('equipmentItemId').value=x.id;$('equipmentItemName').value=x.name||'';$('equipmentItemDescription').value=x.description||'';$('equipmentSaveButton').textContent='SPARA ÄNDRING';$('equipmentCancelEdit').style.display='inline-flex';$('equipmentItemName').focus();}));
+      el.querySelectorAll('[data-equipment-delete]').forEach(b=>b.addEventListener('click',async()=>{const x=records.find(r=>String(r.id)===b.dataset.equipmentDelete);if(!x||!confirm('Ta bort '+x.name+' från detta spel? Eventuell tingning tas också bort.'))return;try{await rpc('tt_admin_equipment_delete',{p_password:adminPassword(),p_equipment_id:Number(x.id)});await loadAdmin();await refreshOpenPanels();message('equipmentAdminMessage','Utrustningen togs bort.');}catch(e){message('equipmentAdminMessage',e.message,true);}}));
+      el.querySelectorAll('[data-equipment-unbook]').forEach(b=>b.addEventListener('click',async()=>{try{await rpc('tt_admin_equipment_unbook',{p_password:adminPassword(),p_equipment_id:Number(b.dataset.equipmentUnbook)});await loadAdmin();await refreshOpenPanels();message('equipmentAdminMessage','Tingningen avbokades.');}catch(e){message('equipmentAdminMessage',e.message,true);}}));
+    }catch(e){el.innerHTML='<div class="admin-participant-empty">Kunde inte hämta utrustning: '+safe(e.message)+'</div>';}
   }
-  function refresh(){read();fillSelect('equipmentAdminGame');fillSelect('equipmentPublicGame');renderAdmin();renderPublic();}
-  $('equipmentAdminGame')?.addEventListener('change',()=>{resetForm();renderAdmin();});
+  async function renderPublic(gameIdOverride,targetOverride,messageOverride){
+    const el=targetOverride||$('equipmentPublicList');if(!el)return;
+    const gameId=gameIdOverride||$('equipmentPublicGame')?.value||'';
+    const msgEl=messageOverride||$('equipmentPublicMessage');
+    const showMessage=(t,error=false)=>{if(!msgEl)return;msgEl.style.display=t?'block':'none';msgEl.textContent=t||'';msgEl.style.borderLeftColor=error?'#b97878':'var(--accent)';};
+    if(!gameId){el.innerHTML='<div class="admin-participant-empty">Välj ett spel för att se tillgänglig utrustning.</div>';return;}
+    el.innerHTML='<div class="admin-participant-empty">Hämtar utrustning...</div>';
+    try{
+      const d=await rpc('tt_public_equipment_list',{p_game_id:Number(gameId)});
+      const rows=Array.isArray(d.items)?d.items:[];
+      if(!rows.length){el.innerHTML='<div class="admin-participant-empty">Ingen låneutrustning upplagd för det här spelet ännu.</div>';return;}
+      el.innerHTML=rows.map(x=>`<article class="equipment-item"><div><h3>${safe(x.name)}</h3>${x.description?`<p>${safe(x.description)}</p>`:''}<span class="equipment-state ${x.booked?'booked':''}">${x.booked?'Redan tingad':'Ledig'}</span></div><div class="equipment-actions"><button class="site-action" type="button" data-equipment-book="${safe(x.id)}" ${x.booked?'disabled':''}>${x.booked?'UPPTAGEN':'TINGA DENNA'}</button></div></article>`).join('');
+      el.querySelectorAll('[data-equipment-book]').forEach(b=>b.addEventListener('click',async()=>{
+        const name=prompt('Ange ditt namn för att tinga denna utrustning:');if(name===null)return;
+        if(!name.trim()){showMessage('Du behöver ange ditt namn för att tinga utrustningen.',true);return;}
+        b.disabled=true;
+        try{await rpc('tt_book_equipment',{p_equipment_id:Number(b.dataset.equipmentBook),p_participant_name:name.trim()});showMessage('Klart! Utrustningen är tingad.');await renderPublic(gameId,el,msgEl);await loadAdmin();}
+        catch(e){showMessage(e.message||'Kunde inte boka utrustningen.',true);await renderPublic(gameId,el,msgEl);}
+      }));
+    }catch(e){el.innerHTML='<div class="admin-participant-empty">Kunde inte hämta utrustning. Försök igen om en stund.</div>';showMessage(e.message,true);}
+  }
+  async function refreshOpenPanels(){document.querySelectorAll('[data-equipment-panel-for]:not([hidden])').forEach(panel=>{const id=panel.getAttribute('data-equipment-panel-for');renderPublic(id,panel.querySelector('[data-equipment-list-for]'),panel.querySelector('[data-equipment-message-for]'));});}
+  async function refresh(){fillSelect('equipmentAdminGame');fillSelect('equipmentPublicGame');await loadAdmin();await renderPublic();}
+  $('equipmentAdminGame')?.addEventListener('change',()=>{resetForm();loadAdmin();});
   $('equipmentPublicGame')?.addEventListener('change',()=>{message('equipmentPublicMessage','');renderPublic();});
-  $('equipmentAdminForm')?.addEventListener('submit',e=>{e.preventDefault();const gameId=$('equipmentAdminGame')?.value||'',name=$('equipmentItemName')?.value.trim()||'',description=$('equipmentItemDescription')?.value.trim()||'';if(!gameId){message('equipmentAdminMessage','Välj ett spel först.',true);return;}if(!name){message('equipmentAdminMessage','Skriv ett namn på utrustningen.',true);return;}if(selectedEditId){const x=records.find(r=>r.id===selectedEditId);if(!x)return;x.name=name;x.description=description;}else{records.push({id:'eq_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),gameId,name,description,bookings:[],createdAt:new Date().toISOString()});}if(!write()){message('equipmentAdminMessage','Kunde inte spara i webbläsaren.',true);return;}resetForm();renderAdmin();renderPublic();message('equipmentAdminMessage','Utrustningen sparades lokalt.');});
+  $('equipmentAdminForm')?.addEventListener('submit',async e=>{e.preventDefault();const gameId=$('equipmentAdminGame')?.value||'',name=$('equipmentItemName')?.value.trim()||'',description=$('equipmentItemDescription')?.value.trim()||'';if(!gameId){message('equipmentAdminMessage','Välj ett spel först.',true);return;}if(!name){message('equipmentAdminMessage','Skriv ett namn på utrustningen.',true);return;}try{if(selectedEditId)await rpc('tt_admin_equipment_save',{p_password:adminPassword(),p_game_id:Number(gameId),p_equipment_id:Number(selectedEditId),p_name:name,p_description:description||null});else await rpc('tt_admin_equipment_save',{p_password:adminPassword(),p_game_id:Number(gameId),p_equipment_id:null,p_name:name,p_description:description||null});resetForm();await loadAdmin();await refreshOpenPanels();message('equipmentAdminMessage','Utrustningen sparades i Supabase.');}catch(err){message('equipmentAdminMessage',err.message,true);}});
   $('equipmentCancelEdit')?.addEventListener('click',resetForm);
-  document.querySelectorAll('.site-menu button[data-page="equipment"]').forEach(b=>b.addEventListener('click',()=>{setTimeout(async()=>{if(typeof window.loadGames==='function'){try{await window.loadGames();}catch(_){}}refresh();},0);}));
-  document.querySelectorAll('.site-menu button[data-page="admin"]').forEach(b=>b.addEventListener('click',()=>setTimeout(refresh,100)));
-  const originalLoadGames=window.loadGames;
-  // The existing script declares loadGames globally with a top-level function;
-  // refresh after navigation and after the game list is updated.
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
-  window.ttRefreshEquipmentPrototype=refresh;
-  window.ttRenderPublicEquipment=renderPublic;
-  read();
-  // Wait for the existing Supabase game loader to populate the shared list.
-  setTimeout(refresh,700);
+  document.querySelectorAll('.site-menu button[data-page="admin"]').forEach(b=>b.addEventListener('click',()=>setTimeout(()=>{fillSelect('equipmentAdminGame');loadAdmin();},150)));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshOpenPanels();});
+  window.ttRefreshEquipmentPrototype=refresh;window.ttRenderPublicEquipment=renderPublic;
+  window.ttRefreshEquipmentAdmin=loadAdmin;
+  setTimeout(()=>{fillSelect('equipmentAdminGame');fillSelect('equipmentPublicGame');},800);
 })();
 </script>
 
